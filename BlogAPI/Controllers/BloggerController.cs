@@ -265,5 +265,55 @@ namespace BlogAPI.Controllers
             }
         }
 
+        [HttpGet("bloggerAndHisContent")]
+        public async Task<ActionResult> BloggerNameAndPostContent(int id)
+        {
+            try
+            {
+                var bloggerData = await _blogContext.Bloggers
+                    .Where(x => x.Id == id)
+                    .Select(b => new
+                    {
+                        BloggerName = b.UserName,
+                        Posts = b.Posts.Select(p => new
+                        {
+                            p.Title,
+                            p.Content
+                        }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (bloggerData != null)
+                {
+                    return Ok(new
+                    {
+                        message = "Sikeres lekérdezés!",
+                        result = bloggerData
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Sikertelen lekérdezés!"
+                });
+
+            }
+
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
+
     }    
 }
