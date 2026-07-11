@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BlogAPI.Models;
 
@@ -17,5 +18,6 @@ public partial class Post
 
     public DateTime? UpdatedAt { get; set; }
 
+    [JsonIgnore]
     public virtual Blogger Blogger { get; set; } = null!;
 }
