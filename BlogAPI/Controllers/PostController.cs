@@ -1,6 +1,7 @@
 ﻿using BlogAPI.Models;
 using BlogAPI.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogAPI.Controllers
 {
@@ -63,5 +64,69 @@ namespace BlogAPI.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetAllPost()
+        {
+            try
+            {
+                return Ok(new
+                {
+                    message = "Sikeres lekérdezés!",
+                    result = await _blogContext.Posts.ToListAsync()
+                });
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
+
+        [HttpGet("id")]
+        // 
+        public async Task<ActionResult> GetPostById([FromQuery] int id)
+        {
+            try
+            {
+                var post = await _blogContext.Posts.FindAsync(id);
+
+                if (post != null)
+                {
+                    return Ok(new
+                    {
+                        message = "Sikeres lekérdezés!",
+                        result = post
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Sikertelen lekérdezés!",
+                });
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
     }
 }
