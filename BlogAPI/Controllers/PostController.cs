@@ -175,5 +175,48 @@ namespace BlogAPI.Controllers
                 });
             }
         }
+
+        // Törlő végpont
+        [HttpDelete]
+        public async Task<ActionResult> DeletePost([FromQuery] int id)
+        {
+            try
+            {
+                var post = await _blogContext.Posts.FindAsync(id);
+
+                if (post != null)
+                {
+                    _blogContext.Posts.Remove(post);
+                    await _blogContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Sikeres törlés!",
+                        result = post
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Nincs ilyen azonosítójú post!"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
+
     }
 }
