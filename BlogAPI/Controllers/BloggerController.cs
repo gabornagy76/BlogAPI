@@ -224,5 +224,46 @@ namespace BlogAPI.Controllers
                 });
             }
         }
+
+        [HttpGet("getBloggerData")]
+        public async Task<ActionResult> GetBloggerAllData([FromQuery] int id)
+        {
+            try
+            {
+                var bloggerData = await _blogContext.Bloggers
+                    .Include(x => x.Posts)
+                    .FirstOrDefaultAsync(x => x.Id ==id);
+
+                if (bloggerData != null)
+                {
+                    return Ok(new
+                    {
+                        message = "Sikeres lekérdezés!",
+                        result = bloggerData
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Sikertelen lekérdezés!"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
+
     }    
 }
