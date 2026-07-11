@@ -3,6 +3,7 @@ using BlogAPI.Models.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace BlogAPI.Controllers
 {
@@ -133,6 +134,53 @@ namespace BlogAPI.Controllers
             }
         }
 
+        // Frissítő lekerédezés - Update
+        [HttpPut]
+        // 2 paraméter kell a frissítő lekérdezéshez: id - query-kénet, és az adatok a törzsben
+        public async Task<ActionResult> UpdateBlogger([FromQuery] int id, [FromBody] UpdateBloggerDTO updateBloggerDTO)
+        {
+            try
+            {
+                var blogger = await _blogContext.Bloggers.FirstOrDefaultAsync(x => x.Id == id);
+
+                if (blogger != null)
+                {
+                    blogger.UserName = updateBloggerDTO.UserName;
+                    blogger.Password = updateBloggerDTO.Password;
+                    blogger.Email = updateBloggerDTO.Email;
+
+                    _blogContext.Bloggers.Update(blogger);
+                    await _blogContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Sikeres frissítés!",
+                        result = blogger
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Nincs ilyen blogger!",
+                    result = blogger
+                });
+
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
 
     }    
 }
