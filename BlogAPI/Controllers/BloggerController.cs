@@ -3,6 +3,7 @@ using BlogAPI.Models.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace BlogAPI.Controllers
@@ -163,6 +164,48 @@ namespace BlogAPI.Controllers
                 {
                     message = "Nincs ilyen blogger!",
                     result = blogger
+                });
+
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
+
+        // Törlő végpont
+        [HttpDelete]
+        public async Task<ActionResult> DeleteBlogger([FromQuery] int id)
+        {
+            try
+            {
+                var blogger = await _blogContext.Bloggers.FindAsync(id);
+
+                if (blogger != null)
+                {
+                    _blogContext.Bloggers.Remove(blogger);
+                    await _blogContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Sikeres törlés!",
+                        result = blogger
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Nincs ilyen blogger!"
                 });
 
             }
