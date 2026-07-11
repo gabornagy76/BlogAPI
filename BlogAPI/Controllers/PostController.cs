@@ -128,5 +128,52 @@ namespace BlogAPI.Controllers
                 });
             }
         }
+
+        // Frissítő lekerédezés - Update
+        [HttpPut]
+        // 2 paraméter kell a frissítő lekérdezéshez: id - query-kénet, és az adatok a törzsben
+        public async Task<ActionResult> UpdatePost([FromQuery] int id, [FromBody] UpdatePostDTO updatePostDTO)
+        {
+            try
+            {
+                var post = await _blogContext.Posts.FirstOrDefaultAsync(x => x.Id == id);
+
+                if (post != null)
+                {
+                    post.Title = updatePostDTO.Title;
+                    post.BloggerId = updatePostDTO.BloggerId;
+                    post.Content = updatePostDTO.Content;
+
+                    _blogContext.Posts.Update(post);
+                    await _blogContext.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Sikeres frissítés!",
+                        result = post
+                    });
+                }
+
+                return StatusCode(404, new
+                {
+                    message = "Nincs ilyen poszt!"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                var errorList = new List<string> { ex.Message };
+
+                if (ex.InnerException != null)
+                {
+                    errorList.Add($"Részletek: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(400, new
+                {
+                    errors = errorList
+                });
+            }
+        }
     }
 }
